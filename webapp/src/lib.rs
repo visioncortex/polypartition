@@ -3,6 +3,7 @@ use wasm_bindgen::prelude::*;
 pub mod canvas;
 pub mod common;
 pub mod draw;
+pub mod polypartition;
 pub mod util;
 
 #[wasm_bindgen(start)]
