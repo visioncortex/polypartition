@@ -1,14 +1,12 @@
-use visioncortex::{Color, ColorName};
-use wasm_bindgen::{JsValue, prelude::*};
+use visioncortex::{Color, ColorName, PointF64};
+use wasm_bindgen::JsValue;
 
-use crate::canvas::Canvas;
+use crate::{canvas::Canvas, polypartition::PolygonProps};
 
-#[wasm_bindgen]
 pub struct DrawingUtil {
     canvas: Canvas,
 }
 
-#[wasm_bindgen]
 impl DrawingUtil {
     pub fn from_canvas_id(canvas_id: &str) -> Self {
         if let Some(canvas) = Canvas::new_from_id(canvas_id) {
@@ -27,5 +25,18 @@ impl DrawingUtil {
         ctx.move_to(x1, y1);
         ctx.line_to(x2, y2);
         ctx.stroke();
+    }
+
+    pub fn draw_line_with_points(&self, p1: &PointF64, p2: &PointF64) {
+        self.draw_line(p1.x, p1.y, p2.x, p2.y);
+    }
+
+    pub fn draw_polygon_with_props(&self, polygon_props: &PolygonProps) {
+        let len = polygon_props.points.len();
+        for curr in 0..len {
+            let p1 = &polygon_props.points[curr];
+            let p2 = &polygon_props.points[(curr+1) % len];
+            self.draw_line_with_points(p1, p2);
+        }
     }
 }
