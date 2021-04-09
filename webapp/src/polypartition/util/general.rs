@@ -1,5 +1,11 @@
 use visioncortex::PointF64;
 
+pub fn point_f64_approximately(p1: PointF64, p2: PointF64) -> bool {
+    let epsilon = 1e-7;
+    let diff = p1 - p2;
+    diff.x < epsilon && diff.y < epsilon
+}
+
 pub fn is_convex(p1: &PointF64, p2: &PointF64, p3: &PointF64) -> bool {
     let tmp = (p3.y - p1.y) * (p2.x - p1.x) - (p3.x - p1.x) * (p2.y - p1.y);
     tmp.is_sign_positive()
@@ -69,12 +75,6 @@ pub fn intersects(p11: &PointF64, p12: &PointF64, p21: &PointF64, p22: &PointF64
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    fn point_f64_approximately(p1: PointF64, p2: PointF64) -> bool {
-        let epsilon = 1e-7;
-        let diff = p1 - p2;
-        diff.x < epsilon && diff.y < epsilon
-    }
 
     #[test]
     fn util_general_point() {
