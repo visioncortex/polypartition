@@ -10,7 +10,7 @@ async function main() {
     const tester = Tester.from_input_text(inputText);
     tester.draw_polygons('main', IN);
     
-    run_test_remove_holes(tester, 'main');
+    run_test_remove_holes(tester, 'main', BOTH);
 }
 
 main().catch(console.error);

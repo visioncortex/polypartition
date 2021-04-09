@@ -14,36 +14,34 @@ pub fn remove_holes(inpolys: &[Polygon]) -> Result<Vec<Polygon>, &str> {
         (None, 0, 0), // (Option<&Polygon>, holepoint_index, hole_polygon_index)
         |(acc_polygon, acc_holepoint_index, acc_hole_polygon_index), (polygon_index, polygon)| {
             if !polygon.props().is_hole {
-                (acc_polygon, acc_holepoint_index, acc_hole_polygon_index)
-            } else  {
-                // Find the point of largest x
-                let holepoint_index = polygon.props().points.iter()
-                    .enumerate()
-                    .skip(1)
-                    .fold( // effectively fold_first
-                        (0, polygon.props().points[0]),
-                        |(p1_index, p1), (p2_index, p2)| {
-                        if p2.x > p1.x { (p2_index, *p2) } else { (p1_index, p1) }
-                    }).0;
-                // Update
-                if let Some(acc_polygon) = acc_polygon {
-                    // Compare the x of current hole polygon with history
-                    let curr_x = polygon.props().points[holepoint_index].x;
-                    // Rust analyzer complained that type annotation was needed so I added this line
-                    let acc_polygon: &Polygon = acc_polygon;
-                    let hist_x = acc_polygon.props().points[acc_holepoint_index].x;
-                    if curr_x > hist_x {
-                        (Some(polygon), holepoint_index, polygon_index)
-                    } else {
-                        (Some(acc_polygon), acc_holepoint_index, acc_hole_polygon_index)
-                    }
-                } else {
+                return (acc_polygon, acc_holepoint_index, acc_hole_polygon_index);
+            }
+            // Find the point of largest x
+            let holepoint_index = polygon.props().points.iter()
+                .enumerate()
+                .skip(1)
+                .fold( // effectively fold_first
+                    (0, polygon.props().points[0]),
+                    |(p1_index, p1), (p2_index, p2)| {
+                    if p2.x > p1.x { (p2_index, *p2) } else { (p1_index, p1) }
+                }).0;
+            // Update
+            if let Some(acc_polygon) = acc_polygon {
+                // Compare the x of current hole polygon with history
+                let curr_x = polygon.props().points[holepoint_index].x;
+                let acc_polygon: &Polygon = acc_polygon;
+                let hist_x = acc_polygon.props().points[acc_holepoint_index].x;
+                if curr_x > hist_x {
                     (Some(polygon), holepoint_index, polygon_index)
+                } else {
+                    (Some(acc_polygon), acc_holepoint_index, acc_hole_polygon_index)
                 }
+            } else { // No history
+                (Some(polygon), holepoint_index, polygon_index)
             }
         }) {
-        // At this point, hole_polygon is the hole polygon we're looking at in this iteration
-        // and holepoint_index is the holepoint with largest x (across all hole polygons)
+        // At this point, hole_polygon stores the hole polygon we're looking at in this iteration
+        // and holepoint_index stores the index of the holepoint with largest x (across all hole polygons)
         let holepoint = hole_polygon.props().points[holepoint_index];
 
         // Now find the suitable non-hole polygon and its "polypoint"
@@ -101,7 +99,9 @@ pub fn remove_holes(inpolys: &[Polygon]) -> Result<Vec<Polygon>, &str> {
                     }
 
                     (acc_polygon, acc_polypoint_index, acc_best_polygon_index)
-            });
+                }
+            );
+            
         let best_polygon = if let Some(polygon) = best_polygon {
             polygon
         } else {
