@@ -5,7 +5,7 @@ use super::Orientation;
 /// Common properties/methods for any polygons.
 ///
 /// To be composed into any structs that represents a polygon
-#[derive(Debug, Default)]
+#[derive(Clone, Debug, Default)]
 pub struct PolygonProps {
     pub points: Vec<PointF64>,
     pub is_hole: bool,
@@ -16,7 +16,7 @@ pub trait PolygonInterface {
     fn props_mut(&mut self) -> &mut PolygonProps;
 }
 
-#[derive(Debug, Default)]
+#[derive(Clone, Debug, Default)]
 // The most basic and generic polygon class
 pub struct Polygon {
     props: PolygonProps,

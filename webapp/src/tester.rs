@@ -1,7 +1,7 @@
 use visioncortex::PointF64;
 use wasm_bindgen::prelude::*;
 
-use crate::{draw::{DrawingUtil}, polypartition::{Polygon, PolygonInterface}, util::console_log_util};
+use crate::{draw::{DrawingUtil}, polypartition::{Polygon, PolygonInterface, remove_holes}, util::console_log_util};
 
 #[wasm_bindgen]
 #[derive(Debug)]
@@ -41,7 +41,11 @@ impl Tester {
         }
     }
 
-    pub fn print(&self) { console_log_util(&format!("{:?}", self)) }
+    pub fn print(&self, in_or_out: &str) {
+        console_log_util(&format!("{}:\n {:?}",
+        in_or_out,
+        if in_or_out == "in" {&self.input_polygons} else {self.output_polygons.as_ref().unwrap()}));
+    }
 
     pub fn draw_polygons(&self, canvas_id: &str, in_or_out: &str) {
         let polygons =
@@ -56,6 +60,16 @@ impl Tester {
         drawing_util.clear();
         for polygon in polygons.iter() {
             drawing_util.draw_polygon_with_props(polygon.props());
+        }
+    }
+
+    pub fn test_remove_holes(&mut self) -> Result<(), JsValue> {
+        match remove_holes(&self.input_polygons) {
+            Ok(polygons_removed_holes) => {
+                self.output_polygons = Some(polygons_removed_holes);
+                Ok(())
+            },
+            Err(e) => Err(e.into())
         }
     }
 }
