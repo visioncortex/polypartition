@@ -1,7 +1,7 @@
 use visioncortex::PointF64;
 use wasm_bindgen::prelude::*;
 
-use crate::{draw::DrawingUtil, polypartition::{Polygon, PolygonInterface}, util::console_log_util};
+use crate::{draw::{DrawingUtil}, polypartition::{Polygon, PolygonInterface}, util::console_log_util};
 
 #[wasm_bindgen]
 #[derive(Debug)]
@@ -53,6 +53,7 @@ impl Tester {
                 panic!("No output!");
             };
         let drawing_util = DrawingUtil::from_canvas_id(canvas_id);
+        drawing_util.clear();
         for polygon in polygons.iter() {
             drawing_util.draw_polygon_with_props(polygon.props());
         }

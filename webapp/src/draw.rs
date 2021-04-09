@@ -18,6 +18,10 @@ impl DrawingUtil {
         }
     }
 
+    pub fn clear(&self) {
+        self.canvas.clear();
+    }
+
     pub fn draw_line(&self, x1: f64, y1: f64, x2: f64, y2: f64) {
         let ctx = self.canvas.get_rendering_context_2d();
         ctx.set_stroke_style(JsValue::from_str(&Color::color(&ColorName::Black).to_color_string()).as_ref());

@@ -67,4 +67,9 @@ impl Canvas {
             height: height as usize,
         }
     }
+
+    pub fn clear(&self) {
+        self.cctx.set_fill_style(&"#FFFFFF".into());
+        self.cctx.fill_rect(0.0, 0.0, self.width() as f64, self.height() as f64);
+    }
 }
