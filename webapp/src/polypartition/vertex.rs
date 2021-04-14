@@ -14,6 +14,7 @@ pub struct PartitionVertex {
 
 #[derive(Clone, Debug, Default, PartialEq)]
 pub struct PartitionVertexInfo {
+    pub id: usize, // For debugging
     pub is_active: bool,
     pub is_convex: bool,
     pub is_ear: bool,

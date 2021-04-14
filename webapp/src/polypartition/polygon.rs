@@ -39,10 +39,11 @@ impl Polygon {
         }
     }
 
-    /// Convert self to a triangle with given vertices, keeping is_hole untouched
-    #[allow(clippy::wrong_self_convention)]
-    pub fn to_triangle(&mut self, p1: PointF64, p2: PointF64, p3: PointF64) {
-        self.props.points = vec![p1, p2, p3];
+    /// Create a triangle with the default props
+    pub fn triangle(p1: PointF64, p2: PointF64, p3: PointF64) -> Self {
+        let mut triangle = Self::default();
+        triangle.props.points = vec![p1, p2, p3];
+        triangle
     }
 
     pub fn is_valid(&self) -> bool {

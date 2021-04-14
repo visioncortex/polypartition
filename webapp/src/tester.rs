@@ -1,7 +1,7 @@
 use visioncortex::PointF64;
 use wasm_bindgen::prelude::*;
 
-use crate::{draw::{DrawingUtil}, polypartition::{Polygon, PolygonInterface, remove_holes}, util::console_log_util};
+use crate::{draw::{DrawingUtil}, polypartition::{Polygon, PolygonInterface, remove_holes, triangulate_ec_vec}, util::console_log_util};
 
 #[wasm_bindgen]
 #[derive(Debug)]
@@ -69,6 +69,20 @@ impl Tester {
                 self.output_polygons = Some(polygons_removed_holes);
                 Ok(())
             },
+            Err(e) => Err(e.into())
+        }
+    }
+    
+    pub fn test_ear_clipping(&mut self) -> Result<(), JsValue> {
+        let polygons_removed_holes = match remove_holes(&self.input_polygons) {
+            Ok(poly) => poly,
+            Err(e) => return Err(e.into())
+        };
+        match triangulate_ec_vec(polygons_removed_holes) {
+            Ok(triangles) => {
+                self.output_polygons = Some(triangles);
+                Ok(())
+            }
             Err(e) => Err(e.into())
         }
     }
