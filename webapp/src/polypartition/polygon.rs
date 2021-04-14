@@ -14,6 +14,14 @@ pub struct PolygonProps {
 pub trait PolygonInterface {
     fn props(&self) -> &PolygonProps;
     fn props_mut(&mut self) -> &mut PolygonProps;
+
+    fn get_point(&self, i: usize) -> PointF64 {
+        self.props().points[i]
+    }
+
+    fn set_point(&mut self, i: usize, p: PointF64) {
+        self.props_mut().points[i] = p;
+    }
 }
 
 #[derive(Clone, Debug, Default)]

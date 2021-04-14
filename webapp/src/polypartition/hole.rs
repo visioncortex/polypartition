@@ -21,16 +21,16 @@ pub fn remove_holes(inpolys: &[Polygon]) -> Result<Vec<Polygon>, &str> {
                 .enumerate()
                 .skip(1)
                 .fold( // effectively fold_first
-                    (0, polygon.props().points[0]),
+                    (0, polygon.get_point(0)),
                     |(p1_index, p1), (p2_index, p2)| {
                     if p2.x > p1.x { (p2_index, *p2) } else { (p1_index, p1) }
                 }).0;
             // Update
             if let Some(acc_polygon) = acc_polygon {
                 // Compare the x of current hole polygon with history
-                let curr_x = polygon.props().points[holepoint_index].x;
+                let curr_x = polygon.get_point(holepoint_index).x;
                 let acc_polygon: &Polygon = acc_polygon;
-                let hist_x = acc_polygon.props().points[acc_holepoint_index].x;
+                let hist_x = acc_polygon.get_point(acc_holepoint_index).x;
                 if curr_x > hist_x {
                     (Some(polygon), holepoint_index, polygon_index)
                 } else {
@@ -42,7 +42,7 @@ pub fn remove_holes(inpolys: &[Polygon]) -> Result<Vec<Polygon>, &str> {
         }) {
         // At this point, hole_polygon stores the hole polygon we're looking at in this iteration
         // and holepoint_index stores the index of the holepoint with largest x (across all hole polygons)
-        let holepoint = hole_polygon.props().points[holepoint_index];
+        let holepoint = hole_polygon.get_point(holepoint_index);
 
         // Now find the suitable non-hole polygon and its "polypoint"
         let non_hole_polygons = polys.iter().filter(|poly| !poly.props().is_hole);
@@ -68,7 +68,7 @@ pub fn remove_holes(inpolys: &[Polygon]) -> Result<Vec<Polygon>, &str> {
                         // Check optimality
                         if let Some(acc_polygon) = acc_polygon {
                             let acc_polygon: &Polygon = acc_polygon;
-                            let best_polypoint = acc_polygon.props().points[acc_polypoint_index];
+                            let best_polypoint = acc_polygon.get_point(acc_polypoint_index);
                             let v1 = normalize(&(polypoint - holepoint));
                             let v2 = normalize(&(best_polypoint - holepoint));
                             if v2.x > v1.x {
@@ -114,16 +114,16 @@ pub fn remove_holes(inpolys: &[Polygon]) -> Result<Vec<Polygon>, &str> {
         );
         // Insert the points in non-hole polygon up until the polypoint
         for i in 0..=polypoint_index {
-            newpoly_points.push(best_polygon.props().points[i]);
+            newpoly_points.push(best_polygon.get_point(i));
         }
         // Insert all points in hole polygon in a cyclic manner STARTING from holepoint
         let hole_num_points = hole_polygon.props().num_points();
         for i in 0..=hole_polygon.props().num_points() {
-            newpoly_points.push(hole_polygon.props().points[(i + holepoint_index) % hole_num_points]);
+            newpoly_points.push(hole_polygon.get_point((i + holepoint_index) % hole_num_points));
         }
         // Insert the rest of the points in non-hole polygon
         for i in polypoint_index..best_polygon.props().num_points() {
-            newpoly_points.push(best_polygon.props().points[i]);
+            newpoly_points.push(best_polygon.get_point(i));
         }
         let newpoly = Polygon::from_points_and_is_hole(newpoly_points, false);
 
