@@ -6,7 +6,7 @@ const OUT = 'out';
 const BOTH = 'both';
 
 async function main() {
-    const inputText = await readFile("../assets/test_input.txt");
+    const inputText = await readFile("../assets/test_input_2_holes.txt");
     const tester = Tester.from_input_text(inputText);
     tester.draw_polygons('main', IN);
     
