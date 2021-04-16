@@ -21,7 +21,7 @@ pub fn triangulate_ec(poly: &Polygon) -> Result<Vec<Polygon>, &str> {
     }
 
     let mut triangles = vec![];
-    let num_vertices = poly.get_num_points();
+    let num_vertices = poly.num_points();
 
     // Just in case (should be guarded above)
     if num_vertices < 3 {

@@ -15,7 +15,7 @@ pub trait PolygonInterface {
     fn props(&self) -> &PolygonProps;
     fn props_mut(&mut self) -> &mut PolygonProps;
 
-    fn get_num_points(&self) -> usize {
+    fn num_points(&self) -> usize {
         self.props().num_points()
     }
 
@@ -87,10 +87,10 @@ impl PolygonProps {
         self.points.clear()
     }
 
-    /// Allocate memory. Does not affect is_hole.
-    pub fn init(&mut self, num_points: usize) {
-        self.points = vec![PointF64::default(); num_points];
-    }
+    // /// Allocate memory. Does not affect is_hole.
+    // pub fn init(&mut self, num_points: usize) {
+    //     self.points = vec![PointF64::default(); num_points];
+    // }
 
     /// Invert the order of vertices
     pub fn invert(&mut self) {

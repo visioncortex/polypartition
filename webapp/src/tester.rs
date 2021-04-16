@@ -1,7 +1,7 @@
 use visioncortex::PointF64;
 use wasm_bindgen::prelude::*;
 
-use crate::{draw::{DrawingUtil}, polypartition::{Polygon, PolygonInterface, remove_holes, triangulate_ec_vec}, util::console_log_util};
+use crate::{draw::{DrawingUtil}, polypartition::{Polygon, PolygonInterface, remove_holes, triangulate_ec_vec, triangulate_opt_vec}, util::console_log_util};
 
 #[wasm_bindgen]
 #[derive(Debug)]
@@ -100,6 +100,16 @@ impl Tester {
                 self.output_polygons = Some(triangles);
                 Ok(())
             }
+            Err(e) => Err(e.into())
+        }
+    }
+
+    pub fn test_optimal_dp(&mut self) -> Result<(), JsValue> {
+        match triangulate_opt_vec(self.input_polygons.clone()) {
+            Ok(polygons) => {
+                self.output_polygons = Some(polygons);
+                Ok(())
+            },
             Err(e) => Err(e.into())
         }
     }

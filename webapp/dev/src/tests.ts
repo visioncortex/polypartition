@@ -82,4 +82,30 @@ export default [
             }
         }
     },
+    async function OptimalDP(canvasId: string, verbose?: string) {
+        let tester: Tester;
+        try {
+            const inputText = await readFile(createPathToAsset("test_input_no_hole.txt"));
+            tester = Tester.from_input_text(inputText);
+            tester.test_optimal_dp();
+            tester.draw_polygons(canvasId, OUT);
+            if ([IN, OUT].includes(verbose)) {
+                tester.print(verbose);
+            } else if (verbose === BOTH) {
+                tester.print(IN);
+                tester.print(OUT);
+            }
+            const dump = tester.dump_polygons(OUT, false);
+            const outputText = await readFile(createPathToAsset("test_triangulate_OPT.txt"));
+            if (dump.localeCompare(outputText) !== 0) {
+                throw `Dump Incorrect!\n\nExpected:\n${outputText}Dump:\n${dump}`;
+            }
+        } catch (e) {
+            throw e;
+        } finally {
+            if (tester) {
+                tester.free();
+            }
+        }
+    },
 ];
