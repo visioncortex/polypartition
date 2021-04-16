@@ -1,9 +1,12 @@
 use visioncortex::PointF64;
 
-pub fn point_f64_approximately(p1: PointF64, p2: PointF64) -> bool {
+pub fn f64_approximately(a: f64, b: f64) -> bool {
     let epsilon = 1e-7;
-    let diff = p1 - p2;
-    diff.x.abs() < epsilon && diff.y.abs() < epsilon
+    (a - b).abs() <= epsilon
+}
+
+pub fn point_f64_approximately(p1: PointF64, p2: PointF64) -> bool {
+    f64_approximately(p1.x, p2.x) && f64_approximately(p1.y, p2.y)
 }
 
 pub fn is_convex(p1: &PointF64, p2: &PointF64, p3: &PointF64) -> bool {

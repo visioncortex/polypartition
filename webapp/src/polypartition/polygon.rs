@@ -15,6 +15,10 @@ pub trait PolygonInterface {
     fn props(&self) -> &PolygonProps;
     fn props_mut(&mut self) -> &mut PolygonProps;
 
+    fn get_num_points(&self) -> usize {
+        self.props().num_points()
+    }
+
     fn get_point(&self, i: usize) -> PointF64 {
         self.props().points[i]
     }

@@ -26,13 +26,13 @@ pub struct PartitionVertexInfo {
 
 impl PartitionVertex {
     /// Get the information stored in this PartitionVertex
-    pub fn get_info(&self) -> &PartitionVertexInfo {
-        &self.info
+    pub fn get_info(&self) -> PartitionVertexInfo {
+        self.info.clone()
     }
 
     pub fn get_previous_info(&self) -> Option<PartitionVertexInfo> {
         if let Some(prev) = &self.previous {
-            Some(prev.borrow().get_info().clone())
+            Some(prev.borrow().get_info())
         } else {
             None
         }
@@ -40,10 +40,14 @@ impl PartitionVertex {
 
     pub fn get_next_info(&self) -> Option<PartitionVertexInfo> {
         if let Some(next) = &self.next {
-            Some(next.borrow().get_info().clone())
+            Some(next.borrow().get_info())
         } else {
             None
         }
+    }
+
+    pub fn set_info(&mut self, info: PartitionVertexInfo) {
+        self.info = info;
     }
 
     pub fn set_previous(&mut self, prev: &PartitionVertexPtr) {
@@ -77,17 +81,17 @@ mod tests {
         pv3.borrow_mut().set_previous(&pv2);
         pv3.borrow_mut().set_next(&pv1);
 
-        assert_eq!(pv1.borrow().get_previous_info().unwrap(), *pv3.borrow().get_info());
-        assert_eq!(pv1.borrow().get_next_info().unwrap(), *pv2.borrow().get_info());
-        assert_eq!(pv2.borrow().get_previous_info().unwrap(), *pv1.borrow().get_info());
-        assert_eq!(pv2.borrow().get_next_info().unwrap(), *pv3.borrow().get_info());
-        assert_eq!(pv3.borrow().get_previous_info().unwrap(), *pv2.borrow().get_info());
-        assert_eq!(pv3.borrow().get_next_info().unwrap(), *pv1.borrow().get_info());
+        assert_eq!(pv1.borrow().get_previous_info().unwrap(), pv3.borrow().get_info());
+        assert_eq!(pv1.borrow().get_next_info().unwrap(), pv2.borrow().get_info());
+        assert_eq!(pv2.borrow().get_previous_info().unwrap(), pv1.borrow().get_info());
+        assert_eq!(pv2.borrow().get_next_info().unwrap(), pv3.borrow().get_info());
+        assert_eq!(pv3.borrow().get_previous_info().unwrap(), pv2.borrow().get_info());
+        assert_eq!(pv3.borrow().get_next_info().unwrap(), pv1.borrow().get_info());
 
         // pv1->next->next = pv3
-        assert_eq!(pv1.borrow().next.as_ref().unwrap().borrow().get_next_info().unwrap(), *pv3.borrow().get_info());
+        assert_eq!(pv1.borrow().next.as_ref().unwrap().borrow().get_next_info().unwrap(), pv3.borrow().get_info());
         // pv1->next->prev = pv1
-        assert_eq!(pv1.borrow().next.as_ref().unwrap().borrow().get_previous_info().unwrap(), *pv1.borrow().get_info());
+        assert_eq!(pv1.borrow().next.as_ref().unwrap().borrow().get_previous_info().unwrap(), pv1.borrow().get_info());
     }
 
     #[test]
@@ -113,14 +117,14 @@ mod tests {
         pv1.borrow_mut().set_next(&pv3);
         pv3.borrow_mut().set_previous(&pv1);
 
-        assert_eq!(pv1.borrow().get_previous_info().unwrap(), *pv3.borrow().get_info());
-        assert_eq!(pv1.borrow().get_next_info().unwrap(), *pv3.borrow().get_info());
-        assert_eq!(pv3.borrow().get_previous_info().unwrap(), *pv1.borrow().get_info());
-        assert_eq!(pv3.borrow().get_next_info().unwrap(), *pv1.borrow().get_info());
+        assert_eq!(pv1.borrow().get_previous_info().unwrap(), pv3.borrow().get_info());
+        assert_eq!(pv1.borrow().get_next_info().unwrap(), pv3.borrow().get_info());
+        assert_eq!(pv3.borrow().get_previous_info().unwrap(), pv1.borrow().get_info());
+        assert_eq!(pv3.borrow().get_next_info().unwrap(), pv1.borrow().get_info());
         
         // pv1->next->next = pv1
-        assert_eq!(pv1.borrow().next.as_ref().unwrap().borrow().get_next_info().unwrap(), *pv1.borrow().get_info());
+        assert_eq!(pv1.borrow().next.as_ref().unwrap().borrow().get_next_info().unwrap(), pv1.borrow().get_info());
         // pv1->next->prev = pv1
-        assert_eq!(pv1.borrow().next.as_ref().unwrap().borrow().get_previous_info().unwrap(), *pv1.borrow().get_info());
+        assert_eq!(pv1.borrow().next.as_ref().unwrap().borrow().get_previous_info().unwrap(), pv1.borrow().get_info());
     }
 }

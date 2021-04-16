@@ -1,47 +1,29 @@
-import { Tester } from "polypartition";
-import { readFile } from "./fileio";
-
-const IN = 'in';
-const OUT = 'out';
-const BOTH = 'both';
+import testFunctions, { IN, OUT, BOTH } from "./tests";
 
 async function main() {
-    const inputText = await readFile("../assets/test_input.txt");
-    const tester = Tester.from_input_text(inputText);
-    tester.draw_polygons('main', IN);
+    let results: {[k: string]: string} = {};
     
-    //runTestRemoveHoles(tester, 'main', BOTH);
-    runTestEarClipping(tester, 'main', BOTH);
-}
+    for (const key in testFunctions) {
+        const fn = testFunctions[key];
+        const testName = fn.name;
+        let success = true;
 
-main().catch(console.error);
-
-function runTestRemoveHoles(tester: Tester, canvasId: string, verbose?: string) {
-    try {
-        tester.test_remove_holes();
-        tester.draw_polygons(canvasId, OUT);
-        if ([IN, OUT].includes(verbose)) {
-            tester.print(verbose);
-        } else if (verbose === BOTH) {
-            tester.print(IN);
-            tester.print(OUT);
+        console.groupCollapsed(testName);
+        try {
+            await fn('main');
+            console.log("%c" + testName + " Success!", "color: lime;");
+        } catch (e) {
+            console.error(e);
+            success = false;
         }
-    } catch (e) {
-        console.error(e);
+        console.groupEnd();
+
+        results[testName] = success? "Success" : "Fail";
     }
+
+    console.table(results);
 }
 
-function runTestEarClipping(tester: Tester, canvasId: string, verbose?: string) {
-    try {
-        tester.test_ear_clipping();
-        tester.draw_polygons(canvasId, OUT);
-        if ([IN, OUT].includes(verbose)) {
-            tester.print(verbose);
-        } else if (verbose === BOTH) {
-            tester.print(IN);
-            tester.print(OUT);
-        }
-    } catch (e) {
-        console.error(e);
-    }
-}
+main()
+.then(() => console.log("main() finishes."))
+.catch(console.error);

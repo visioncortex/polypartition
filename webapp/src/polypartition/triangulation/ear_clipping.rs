@@ -22,7 +22,7 @@ pub fn triangulate_ec(poly: &Polygon) -> Result<Vec<Polygon>, &str> {
     }
 
     let mut triangles = vec![];
-    let num_vertices = poly.props().num_points();
+    let num_vertices = poly.get_num_points();
 
     // Just in case (should be guarded above)
     if num_vertices < 3 {
@@ -39,10 +39,13 @@ pub fn triangulate_ec(poly: &Polygon) -> Result<Vec<Polygon>, &str> {
     }
 
     for i in 0..num_vertices {
-        // Initialize
-        vertices[i].borrow_mut().info.id = i;
-        vertices[i].borrow_mut().info.is_active = true;
-        vertices[i].borrow_mut().info.p = poly.props().points[i];
+        let mut info = PartitionVertexInfo::default();
+        // Fill in info
+        info.id = i;
+        info.is_active = true;
+        info.p = poly.get_point(i);
+
+        vertices[i].borrow_mut().set_info(info);
 
         // Setting previous/next
         if i == (num_vertices - 1) { // Last
@@ -57,6 +60,7 @@ pub fn triangulate_ec(poly: &Polygon) -> Result<Vec<Polygon>, &str> {
         }
     }
 
+    // Update the angles and is_ear the first time
     for vertex in vertices.iter() {
         update_vertex(vertex, &vertices);
     }
@@ -79,7 +83,6 @@ pub fn triangulate_ec(poly: &Polygon) -> Result<Vec<Polygon>, &str> {
                 }
                 if let Some(optimal_ear) = ear {
                     let optimal_ear: &PartitionVertexPtr = optimal_ear;
-                    //crate::util::console_log_util(optimal_ear.borrow().info.angle);
                     if vertex.borrow().info.angle > optimal_ear.borrow().info.angle {
                         Some(vertex)
                     } else {
@@ -116,7 +119,6 @@ pub fn triangulate_ec(poly: &Polygon) -> Result<Vec<Polygon>, &str> {
         update_vertex(&next, &vertices);
     }
 
-    // Create a triangle for each active vertex
     for vertex in vertices.iter() {
         if vertex.borrow().info.is_active {
             triangles.push(Polygon::triangle(
