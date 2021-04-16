@@ -3,7 +3,7 @@ use visioncortex::PointF64;
 pub fn point_f64_approximately(p1: PointF64, p2: PointF64) -> bool {
     let epsilon = 1e-7;
     let diff = p1 - p2;
-    diff.x < epsilon && diff.y < epsilon
+    diff.x.abs() < epsilon && diff.y.abs() < epsilon
 }
 
 pub fn is_convex(p1: &PointF64, p2: &PointF64, p3: &PointF64) -> bool {
