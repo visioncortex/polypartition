@@ -47,6 +47,23 @@ impl Tester {
         if in_or_out == "in" {&self.input_polygons} else {self.output_polygons.as_ref().unwrap()}));
     }
 
+    pub fn dump_polygons(&self, in_or_out: &str, decimal: bool) -> String {
+        let polygons =
+            if in_or_out == "in" {
+                &self.input_polygons
+            } else if let Some(output) = &self.output_polygons {
+                output
+            } else {
+                panic!("No output!");
+            };
+        let mut dump = vec![polygons.len().to_string()];
+        for polygon in polygons.iter() {
+            dump.push(polygon.props().dump(decimal));
+        }
+
+        dump.join("\n")
+    }
+
     pub fn draw_polygons(&self, canvas_id: &str, in_or_out: &str) {
         let polygons =
             if in_or_out == "in" {

@@ -126,4 +126,15 @@ impl PolygonProps {
     pub fn is_valid(&self) -> bool {
         self.num_points() >= 3
     }
+
+    pub fn dump(&self, decimal: bool) -> String {
+        let mut dump = vec![self.num_points().to_string(), (self.is_hole as i32).to_string()];
+        for p in self.points.iter() {
+            dump.push(format!("{} {}",
+                if decimal {p.x.to_string()} else {(p.x as i32).to_string()},
+                if decimal {p.y.to_string()} else {(p.y as i32).to_string()}
+            ));
+        }
+        dump.join("\n")
+    }
 }
