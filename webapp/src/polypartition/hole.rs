@@ -2,7 +2,7 @@ use super::{Polygon, PolygonInterface, intersects, is_in_cone, normalize};
 
 pub fn remove_holes(inpolys: &[Polygon]) -> Result<Vec<Polygon>, &str> {
     // Check for the trivial case of no holes
-    if inpolys.iter().find(|polygon| polygon.props().is_hole).is_none() {
+    if inpolys.iter().find(|polygon| polygon.is_hole()).is_none() {
         return Ok(inpolys.to_vec());
     }
 
@@ -13,7 +13,7 @@ pub fn remove_holes(inpolys: &[Polygon]) -> Result<Vec<Polygon>, &str> {
     while let (Some(hole_polygon), holepoint_index, hole_polygon_index) = polys.iter().enumerate().fold(
         (None, 0, 0), // (Option<&Polygon>, holepoint_index, hole_polygon_index)
         |(acc_polygon, acc_holepoint_index, acc_hole_polygon_index), (polygon_index, polygon)| {
-            if !polygon.props().is_hole {
+            if !polygon.is_hole() {
                 return (acc_polygon, acc_holepoint_index, acc_hole_polygon_index);
             }
             // Find the point of largest x
@@ -45,7 +45,7 @@ pub fn remove_holes(inpolys: &[Polygon]) -> Result<Vec<Polygon>, &str> {
         let holepoint = hole_polygon.get_point(holepoint_index);
 
         // Now find the suitable non-hole polygon and its "polypoint"
-        let non_hole_polygons = polys.iter().filter(|poly| !poly.props().is_hole);
+        let non_hole_polygons = polys.iter().filter(|poly| !poly.is_hole());
         let (best_polygon, polypoint_index, best_polygon_index) = non_hole_polygons.into_iter().enumerate()
             .fold(
                 (None, 0, 0), // To simulate pointfound. (Option<&polygon>, polypoint_index, best_polygon_index)
@@ -77,7 +77,7 @@ pub fn remove_holes(inpolys: &[Polygon]) -> Result<Vec<Polygon>, &str> {
                         }
                         // Check visibility
                         let all_visible = polys.iter().all(|poly| {
-                            if poly.props().is_hole {
+                            if poly.is_hole() {
                                 return true;
                             }
                             let points = &poly.props().points;

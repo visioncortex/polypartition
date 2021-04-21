@@ -26,6 +26,10 @@ pub trait PolygonInterface {
     fn set_point(&mut self, i: usize, p: PointF64) {
         self.props_mut().points[i] = p;
     }
+
+    fn is_hole(&self) -> bool {
+        self.props().is_hole
+    }
 }
 
 #[derive(Clone, Debug, Default)]

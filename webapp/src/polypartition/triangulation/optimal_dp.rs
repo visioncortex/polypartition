@@ -6,7 +6,7 @@ use std::collections::VecDeque;
 pub fn triangulate_opt_vec(polys: Vec<Polygon>) -> Result<Vec<Polygon>, String> {
     let mut triangles = vec![];
     for poly in polys.iter() {
-        if poly.props().is_hole {
+        if poly.is_hole() {
             return Err("Input polygon cannot be a hole in optimal dp!".into());
         }
         let result = triangulate_opt(poly);
@@ -47,6 +47,7 @@ pub fn triangulate_opt(poly: &Polygon) -> Result<Vec<Polygon>, &str> {
     // Initialize states and visibility
     for i in 0..(num_vertices-1) {
         let p1 = poly.get_point(i);
+        #[allow(clippy::needless_range_loop)]
         for j in (i+1)..num_vertices {
             dp_states[j][i].visible = true;
 
