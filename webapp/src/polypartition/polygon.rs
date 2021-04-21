@@ -105,11 +105,6 @@ impl PolygonProps {
         self.points.clear()
     }
 
-    // /// Allocate memory. Does not affect is_hole.
-    // pub fn init(&mut self, num_points: usize) {
-    //     self.points = vec![PointF64::default(); num_points];
-    // }
-
     /// Invert the order of vertices
     pub fn invert(&mut self) {
         self.points.reverse()
