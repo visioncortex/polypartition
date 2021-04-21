@@ -42,9 +42,16 @@ impl Tester {
     }
 
     pub fn print(&self, in_or_out: &str) {
-        console_log_util(&format!("{}:\n {:?}",
+        let empty = vec![];
+        console_log_util(&format!("{:?}:\n {:?}",
         in_or_out,
-        if in_or_out == "in" {&self.input_polygons} else {self.output_polygons.as_ref().unwrap()}));
+        if in_or_out == "in" {
+            &self.input_polygons
+        } else if let Some(polys) = &self.output_polygons {
+            polys
+        } else {
+            &empty
+        }));
     }
 
     pub fn dump_polygons(&self, in_or_out: &str, decimal: bool) -> String {

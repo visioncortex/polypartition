@@ -20,7 +20,7 @@ async function main() {
 
         console.groupCollapsed(testName);
         try {
-            await fn(testName);
+            await fn(testName, BOTH);
             console.log("%c" + testName + " Success!", "color: lime;");
         } catch (e) {
             console.error(e);

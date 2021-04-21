@@ -1,3 +1,5 @@
+use std::fmt::Debug;
+
 use visioncortex::PointF64;
 
 use super::Orientation;
@@ -5,10 +7,22 @@ use super::Orientation;
 /// Common properties/methods for any polygons.
 ///
 /// To be composed into any structs that represents a polygon
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Default)]
 pub struct PolygonProps {
     pub points: Vec<PointF64>,
     pub is_hole: bool,
+}
+
+impl Debug for PolygonProps {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut formatted = vec![(if self.is_hole {"HOLE"} else {"SOLID"}).to_string()];
+
+        for point in self.points.iter() {
+            formatted.push(format!("({}, {})", point.x, point.y));
+        }
+
+        f.write_str(&("<".to_owned() + &formatted.join(", ") + ">\n"))
+    }
 }
 
 pub trait PolygonInterface {

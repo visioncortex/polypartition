@@ -8,7 +8,7 @@ export const BOTH = 'both';
 export default [
     async function RenderInput(canvasId: string, verbose?: string) {
         let tester: Tester;
-        try {
+try {
             const inputText = await readFile(createPathToAsset("test_input.txt"));
             tester = Tester.from_input_text(inputText);
             tester.draw_polygons(canvasId, IN);
