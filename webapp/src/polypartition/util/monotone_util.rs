@@ -5,7 +5,7 @@ use crate::polypartition::VertexType;
 
 use super::{f64_approximately, is_convex, point_f64_approximately};
 
-#[derive(Default)]
+#[derive(Clone, Default, PartialEq)]
 pub struct MonotoneVertex {
     pub p: PointF64,
     pub previous: usize,
