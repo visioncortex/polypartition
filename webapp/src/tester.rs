@@ -1,7 +1,7 @@
 use visioncortex::PointF64;
 use wasm_bindgen::prelude::*;
 
-use crate::{draw::{DrawingUtil}, polypartition::{Polygon, PolygonInterface, remove_holes, triangulate_ec_vec, triangulate_opt_vec}, util::console_log_util};
+use crate::{draw::{DrawingUtil}, polypartition::{Polygon, PolygonInterface, remove_holes, triangulate_ec_vec, triangulate_mono_vec, triangulate_opt_vec}, util::console_log_util};
 
 #[wasm_bindgen]
 #[derive(Debug)]
@@ -88,36 +88,25 @@ impl Tester {
     }
 
     pub fn test_remove_holes(&mut self) -> Result<(), JsValue> {
-        match remove_holes(&self.input_polygons) {
-            Ok(polygons_removed_holes) => {
-                self.output_polygons = Some(polygons_removed_holes);
-                Ok(())
-            },
-            Err(e) => Err(e.into())
-        }
+        self.output_polygons = Some(remove_holes(&self.input_polygons)?);
+        Ok(())
     }
     
     pub fn test_ear_clipping(&mut self) -> Result<(), JsValue> {
-        let polygons_removed_holes = match remove_holes(&self.input_polygons) {
-            Ok(poly) => poly,
-            Err(e) => return Err(e.into())
-        };
-        match triangulate_ec_vec(polygons_removed_holes) {
-            Ok(triangles) => {
-                self.output_polygons = Some(triangles);
-                Ok(())
-            }
-            Err(e) => Err(e.into())
-        }
+        let polygons_removed_holes = remove_holes(&self.input_polygons)?;
+        self.output_polygons = Some(triangulate_ec_vec(polygons_removed_holes)?);
+        Ok(())
     }
 
     pub fn test_optimal_dp(&mut self) -> Result<(), JsValue> {
-        match triangulate_opt_vec(self.input_polygons.clone()) {
-            Ok(polygons) => {
-                self.output_polygons = Some(polygons);
-                Ok(())
-            },
-            Err(e) => Err(e.into())
+        self.output_polygons = Some(triangulate_opt_vec(self.input_polygons.clone())?);
+        Ok(())
+    }
+
+    pub fn test_monotone(&mut self) -> Result<(), JsValue> {
+        unsafe {
+            self.output_polygons = Some(triangulate_mono_vec(self.input_polygons.clone())?);
+            Ok(())
         }
     }
 }

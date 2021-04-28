@@ -7,6 +7,163 @@ use crate::polypartition::enums::VertexType;
 use visioncortex::PointF64;
 
 #[allow(clippy::clippy::missing_safety_doc)]
+pub unsafe fn triangulate_mono_vec(polys: Vec<Polygon>) -> Result<Vec<Polygon>, String> {
+    let polys = monotone_partition(polys)?;
+    let mut triangles = vec![];
+    for poly in polys.iter() {
+        triangles.extend(triangulate_mono(poly)?);
+    }
+    Ok(triangles)
+}
+
+#[allow(clippy::clippy::missing_safety_doc)]
+pub unsafe fn triangulate_mono(poly: &Polygon) -> Result<Vec<Polygon>, &str> {
+    if !poly.is_valid() {
+        return Err("Input polygon is invalid.");
+    }
+
+    let num_points = poly.num_points();
+
+    // Trivial case
+    if num_points == 3 {
+        return Ok(vec![poly.clone()]);
+    }
+    
+    let points = &poly.props().points;
+
+    let mut top_index = 0;
+    let mut bottom_index = 0;
+    // Find the top-most and bottom-most points
+    for i in 1..num_points {
+        if is_below(&points[i], &points[bottom_index]) {
+            bottom_index = i;
+        }
+        if is_below(&points[top_index], &points[i]) {
+            top_index = i;
+        }
+    }
+
+    // Check if the polygon is really monotone
+    {
+        let mut i;
+
+        i = top_index;
+        while i != bottom_index {
+            let i2 = (i+1) % num_points;
+            if is_below(&points[i2], &points[i]) {
+                return Err("Input polygon is not monotone.");
+            }
+            i = i2;
+        }
+
+        i = bottom_index;
+        while i != top_index {
+            let i2 = (i+1) % num_points;
+            if is_below(&points[i], &points[i2]) {
+                return Err("Input polygon is not monotone.");
+            }
+            i = i2;
+        }
+    }
+
+    let mut vertex_types = vec![0_i8; num_points];
+    let mut priority = vec![0_usize; num_points];
+
+    // Merge left and right vertex chains
+    priority[0] = top_index;
+    vertex_types[top_index] = 0;
+    let mut left_index = (top_index+1) % num_points;
+    let mut right_index = if top_index == 0 {num_points-1} else {top_index-1};
+    for p in priority.iter_mut().take(num_points-1) {
+        if left_index == bottom_index {
+            *p = right_index;
+            right_index = if right_index==0 {num_points-1} else {right_index-1};
+            vertex_types[*p] = -1;
+        } else if right_index == bottom_index {
+            *p = left_index;
+            left_index = (left_index+1) % num_points;
+            vertex_types[*p] = 1;
+        } else if is_below(&points[left_index], &points[right_index]) {
+            *p = right_index;
+            right_index = if right_index==0 {num_points-1} else {right_index-1};
+            vertex_types[*p]  = -1;
+        } else {
+            *p = left_index;
+            left_index = (left_index+1) % num_points;
+            vertex_types[*p] = 1;
+        }
+    }
+    priority[num_points-1] = bottom_index;
+    vertex_types[bottom_index] = 0;
+
+    let mut stack = vec![0_usize; num_points];
+    let mut stack_ptr = 2;
+
+    stack[0] = priority[0];
+    stack[1] = priority[1];
+
+    let mut triangles = vec![];
+
+    // For each vertex from top to bottom trim as many triangles as possible
+    for i in 2..(num_points-1) {
+        let v_index = priority[i];
+        if vertex_types[v_index] != vertex_types[stack[stack_ptr - 1]] {
+            for j in 0..(stack_ptr-1) {
+                if vertex_types[v_index] == 1 {
+                    triangles.push(Polygon::triangle(
+                        points[stack[j+1]], points[stack[j]], points[v_index]
+                    ));
+                } else {
+                    triangles.push(Polygon::triangle(
+                        points[stack[j]], points[stack[j+1]], points[v_index]
+                    ));
+                }
+            }
+            stack[0] = priority[i-1];
+            stack[1] = priority[i];
+            stack_ptr = 2;
+        } else {
+            stack_ptr -= 1;
+            while stack_ptr > 0 {
+                if vertex_types[v_index] == 1 {
+                    if is_convex(&points[v_index], &points[stack[stack_ptr - 1]], &points[stack[stack_ptr]]) {
+                        triangles.push(Polygon::triangle(
+                            points[v_index], points[stack[stack_ptr-1]], points[stack[stack_ptr]]
+                        ));
+                        stack_ptr -= 1;
+                    } else {
+                        break;
+                    }
+                } else if is_convex(&points[v_index], &points[stack[stack_ptr]], &points[stack[stack_ptr - 1]]) {
+                    triangles.push(Polygon::triangle(
+                        points[v_index], points[stack[stack_ptr]], points[stack[stack_ptr-1]]
+                    ));
+                    stack_ptr -= 1;
+                } else { 
+                    break;
+                }
+            }
+            stack[stack_ptr + 1] = v_index;
+            stack_ptr += 2;
+        }
+    }
+    let v_index = priority[num_points-1];
+    for j in 0..(stack_ptr-1) {
+        if vertex_types[stack[j+1]] == 1 {
+            triangles.push(Polygon::triangle(
+                points[stack[j]], points[stack[j+1]], points[v_index]
+            ));
+        } else {
+            triangles.push(Polygon::triangle(
+                points[stack[j+1]], points[stack[j]], points[v_index]
+            ));
+        }
+    }
+
+    Ok(triangles)
+}
+
+#[allow(clippy::clippy::missing_safety_doc)]
 pub unsafe fn monotone_partition(inpolys: Vec<Polygon>) -> Result<Vec<Polygon>, &'static str> {
     if inpolys.iter().any(|poly| !poly.is_valid()) {
         return Err("Some input polygon is invalid!");

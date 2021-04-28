@@ -86,6 +86,7 @@ pub enum EdgeTreePtr {
     Null
 }
 
+// Returns true iff p1 is considered to be below p2
 pub fn is_below(p1: &PointF64, p2: &PointF64) -> bool {
     p1.y < p2.y || (f64_approximately(p1.y, p2.y) && p1.x < p2.x)
 }
