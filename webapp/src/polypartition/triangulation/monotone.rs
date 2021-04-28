@@ -271,8 +271,9 @@ pub unsafe fn monotone_partition(inpolys: Vec<Polygon>) -> Result<Vec<Polygon>, 
                 }
 
                 if let EdgeTreePtr::Node(ptr) = edge_tree_pointers[v.previous] {
-                    let mut cursor = edge_tree.cursor_mut_from_ptr(ptr);
-                    cursor.remove();
+                    let edge = edge_tree.cursor_from_ptr(ptr).get().unwrap().clone();
+                    edge_tree_pointers[v.previous] = EdgeTreePtr::Null;
+                    edge_tree.find_mut(&edge).remove();
                 }
                 edge_tree_pointers[v.previous] = EdgeTreePtr::Null;
             },
@@ -315,8 +316,9 @@ pub unsafe fn monotone_partition(inpolys: Vec<Polygon>) -> Result<Vec<Polygon>, 
                 }
 
                 if let EdgeTreePtr::Node(ptr) = edge_tree_pointers[v.previous] {
-                    let mut cursor = edge_tree.cursor_mut_from_ptr(ptr);
-                    cursor.remove();
+                    let edge = edge_tree.cursor_from_ptr(ptr).get().unwrap().clone();
+                    edge_tree_pointers[v.previous] = EdgeTreePtr::Null;
+                    edge_tree.find_mut(&edge).remove();
                 }
                 edge_tree_pointers[v.previous] = EdgeTreePtr::Null;
 
@@ -350,8 +352,9 @@ pub unsafe fn monotone_partition(inpolys: Vec<Polygon>) -> Result<Vec<Polygon>, 
                     }
 
                     if let EdgeTreePtr::Node(ptr) = edge_tree_pointers[v.previous] {
-                        let mut cursor = edge_tree.cursor_mut_from_ptr(ptr);
-                        cursor.remove();
+                        let edge = edge_tree.cursor_from_ptr(ptr).get().unwrap().clone();
+                        edge_tree_pointers[v.previous] = EdgeTreePtr::Null;
+                        edge_tree.find_mut(&edge).remove();
                     }
                     edge_tree_pointers[v.previous] = EdgeTreePtr::Null;
 
