@@ -9,11 +9,7 @@ pub fn triangulate_opt_vec(polys: Vec<Polygon>) -> Result<Vec<Polygon>, String> 
         if poly.is_hole() {
             return Err("Input polygon cannot be a hole in optimal dp!".into());
         }
-        let result = triangulate_opt(poly);
-        match result {
-            Ok(pieces) => triangles.extend(pieces),
-            Err(e) => return Err(e.into())
-        }
+        triangles.extend(triangulate_opt(poly)?);
     }
     Ok(triangles)
 }

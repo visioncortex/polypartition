@@ -3,11 +3,7 @@ use crate::polypartition::{PartitionVertex, PartitionVertexInfo, Polygon, Polygo
 pub fn triangulate_ec_vec(polys: Vec<Polygon>) -> Result<Vec<Polygon>, String> {
     let mut triangles = vec![];
     for poly in polys.iter() {
-        let result = triangulate_ec(poly);
-        match result {
-            Ok(pieces) => triangles.extend(pieces),
-            Err(e) => return Err(e.into())
-        }
+        triangles.extend(triangulate_ec(poly)?);
     }
     Ok(triangles)
 }
