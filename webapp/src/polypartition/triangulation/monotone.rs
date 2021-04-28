@@ -6,7 +6,8 @@ use crate::polypartition::enums::VertexType;
 
 use visioncortex::PointF64;
 
-pub fn monotone_partition(inpolys: Vec<Polygon>) -> Result<Vec<Polygon>, &'static str> {
+#[allow(clippy::clippy::missing_safety_doc)]
+pub unsafe fn monotone_partition(inpolys: Vec<Polygon>) -> Result<Vec<Polygon>, &'static str> {
     if inpolys.iter().any(|poly| !poly.is_valid()) {
         return Err("Some input polygon is invalid!");
     }
@@ -113,7 +114,7 @@ pub fn monotone_partition(inpolys: Vec<Polygon>) -> Result<Vec<Polygon>, &'stati
                 }
 
                 if let EdgeTreePtr::Node(ptr) = edge_tree_pointers[v.previous] {
-                    let mut cursor = unsafe { edge_tree.cursor_mut_from_ptr(ptr) };
+                    let mut cursor = edge_tree.cursor_mut_from_ptr(ptr);
                     cursor.remove();
                 }
                 edge_tree_pointers[v.previous] = EdgeTreePtr::Null;
@@ -157,7 +158,7 @@ pub fn monotone_partition(inpolys: Vec<Polygon>) -> Result<Vec<Polygon>, &'stati
                 }
 
                 if let EdgeTreePtr::Node(ptr) = edge_tree_pointers[v.previous] {
-                    let mut cursor = unsafe { edge_tree.cursor_mut_from_ptr(ptr) };
+                    let mut cursor = edge_tree.cursor_mut_from_ptr(ptr);
                     cursor.remove();
                 }
                 edge_tree_pointers[v.previous] = EdgeTreePtr::Null;
@@ -192,7 +193,7 @@ pub fn monotone_partition(inpolys: Vec<Polygon>) -> Result<Vec<Polygon>, &'stati
                     }
 
                     if let EdgeTreePtr::Node(ptr) = edge_tree_pointers[v.previous] {
-                        let mut cursor = unsafe { edge_tree.cursor_mut_from_ptr(ptr) };
+                        let mut cursor = edge_tree.cursor_mut_from_ptr(ptr);
                         cursor.remove();
                     }
                     edge_tree_pointers[v.previous] = EdgeTreePtr::Null;
