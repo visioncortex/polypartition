@@ -39,8 +39,6 @@ pub fn triangulate_mono(poly: &Polygon) -> Result<Vec<Polygon>, &str> {
         }
     }
 
-    crate::util::console_log_util(format!("Top: {:?} Bottom: {:?}", points[top_index], points[bottom_index]));
-
     // Check if the polygon is really monotone
     {
         let mut i;
