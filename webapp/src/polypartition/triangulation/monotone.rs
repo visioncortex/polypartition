@@ -33,10 +33,10 @@ pub unsafe fn triangulate_mono(poly: &Polygon) -> Result<Vec<Polygon>, &str> {
     let mut bottom_index = 0;
     // Find the top-most and bottom-most points
     for i in 1..num_points {
-        if is_below(&points[i], &points[bottom_index]) {
+        if !is_below(&points[i], &points[bottom_index]) {
             bottom_index = i;
         }
-        if is_below(&points[top_index], &points[i]) {
+        if !is_below(&points[top_index], &points[i]) {
             top_index = i;
         }
     }
@@ -50,7 +50,7 @@ pub unsafe fn triangulate_mono(poly: &Polygon) -> Result<Vec<Polygon>, &str> {
         i = top_index;
         while i != bottom_index {
             let i2 = (i+1) % num_points;
-            if !is_below(&points[i2], &points[i]) {
+            if is_below(&points[i2], &points[i]) {
                 return Err("Input polygon is not monotone.");
             }
             i = i2;
@@ -59,7 +59,7 @@ pub unsafe fn triangulate_mono(poly: &Polygon) -> Result<Vec<Polygon>, &str> {
         i = bottom_index;
         while i != top_index {
             let i2 = (i+1) % num_points;
-            if !is_below(&points[i], &points[i2]) {
+            if is_below(&points[i], &points[i2]) {
                 return Err("Input polygon is not monotone.");
             }
             i = i2;
@@ -83,7 +83,7 @@ pub unsafe fn triangulate_mono(poly: &Polygon) -> Result<Vec<Polygon>, &str> {
             *p = left_index;
             left_index = (left_index+1) % num_points;
             vertex_types[*p] = 1;
-        } else if is_below(&points[left_index], &points[right_index]) {
+        } else if !is_below(&points[left_index], &points[right_index]) {
             *p = right_index;
             right_index = if right_index==0 {num_points-1} else {right_index-1};
             vertex_types[*p]  = -1;
