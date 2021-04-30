@@ -1,5 +1,5 @@
 use crate::polypartition::{EdgeVec, Polygon, PolygonInterface};
-use crate::polypartition::util::{add_diagonal, f64_approximately, is_below, is_convex, MonotoneVertex, ScanLineEdge};
+use crate::polypartition::util::{add_diagonal, f64_approximately, is_above, is_convex, MonotoneVertex, ScanLineEdge};
 use crate::polypartition::enums::VertexType;
 
 use visioncortex::PointF64;
@@ -31,10 +31,10 @@ pub fn triangulate_mono(poly: &Polygon) -> Result<Vec<Polygon>, &str> {
     let mut bottom_index = 0;
     // Find the top-most and bottom-most points
     for i in 1..num_points {
-        if !is_below(&points[i], &points[bottom_index]) {
+        if !is_above(&points[i], &points[bottom_index]) {
             bottom_index = i;
         }
-        if !is_below(&points[top_index], &points[i]) {
+        if !is_above(&points[top_index], &points[i]) {
             top_index = i;
         }
     }
@@ -48,7 +48,7 @@ pub fn triangulate_mono(poly: &Polygon) -> Result<Vec<Polygon>, &str> {
         i = top_index;
         while i != bottom_index {
             let i2 = (i+1) % num_points;
-            if is_below(&points[i2], &points[i]) {
+            if is_above(&points[i2], &points[i]) {
                 return Err("Input polygon is not monotone.");
             }
             i = i2;
@@ -57,7 +57,7 @@ pub fn triangulate_mono(poly: &Polygon) -> Result<Vec<Polygon>, &str> {
         i = bottom_index;
         while i != top_index {
             let i2 = (i+1) % num_points;
-            if is_below(&points[i], &points[i2]) {
+            if is_above(&points[i], &points[i2]) {
                 return Err("Input polygon is not monotone.");
             }
             i = i2;
@@ -81,7 +81,7 @@ pub fn triangulate_mono(poly: &Polygon) -> Result<Vec<Polygon>, &str> {
             *p = left_index;
             left_index = (left_index+1) % num_points;
             vertex_types[*p] = 1;
-        } else if !is_below(&points[left_index], &points[right_index]) {
+        } else if !is_above(&points[left_index], &points[right_index]) {
             *p = right_index;
             right_index = if right_index==0 {num_points-1} else {right_index-1};
             vertex_types[*p]  = -1;
@@ -218,13 +218,13 @@ pub fn monotone_partition(inpolys: Vec<Polygon>) -> Result<Vec<Polygon>, &'stati
         let v_prev = &vertices[v.previous];
         let v_next = &vertices[v.next];
 
-        if is_below(&v_prev.p, &v.p) && is_below(&v_next.p, &v.p) {
+        if is_above(&v_prev.p, &v.p) && is_above(&v_next.p, &v.p) {
             if is_convex(&v_next.p, &v_prev.p, &v.p) {
                 vertex_types[i] = VertexType::Start;
             } else {
                 vertex_types[i] = VertexType::Split;
             }
-        } else if is_below(&v.p, &v_prev.p) && is_below(&v.p, &v_next.p) {
+        } else if is_above(&v.p, &v_prev.p) && is_above(&v.p, &v_next.p) {
             if is_convex(&v_next.p, &v_prev.p, &v.p) {
                 vertex_types[i] = VertexType::End;
             } else {
@@ -338,7 +338,7 @@ pub fn monotone_partition(inpolys: Vec<Polygon>) -> Result<Vec<Polygon>, &'stati
                 helpers[index] = v_index2;
             },
             VertexType::Regular => {
-                if is_below(&v.p, &vertices[v.previous].p) {
+                if is_above(&v.p, &vertices[v.previous].p) {
                     if edge_tree_pointers[v.previous].is_none() {
                         return Err("Pointer is NULL.");
                     }
