@@ -2,7 +2,7 @@ use std::{cell::RefCell, rc::Rc};
 
 use visioncortex::PointF64;
 
-use crate::{polypartition::VertexType, util::console_log_util};
+use crate::polypartition::VertexType;
 
 use super::{f64_approximately, is_convex, point_f64_approximately};
 
@@ -23,7 +23,7 @@ pub struct ScanLineEdge {
 impl ScanLineEdge {
     pub fn is_left_of(&self, other: &ScanLineEdge) -> bool {
         if self.is_same_position_as(other) {
-            return false;
+            return self.index < other.index;
         }
 
         if f64_approximately(other.p1.y, other.p2.y) {
@@ -45,31 +45,31 @@ impl ScanLineEdge {
     }
 }
 
-// impl PartialEq for ScanLineEdge {
-//     fn eq(&self, other: &Self) -> bool {
-//         self.is_same_position_as(other)
-//     }
-// }
+impl PartialEq for ScanLineEdge {
+    fn eq(&self, other: &Self) -> bool {
+        self.is_same_position_as(other)
+    }
+}
 
-// impl Eq for ScanLineEdge {}
+impl Eq for ScanLineEdge {}
 
-// impl PartialOrd for ScanLineEdge {
-//     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-//         Some(self.cmp(other))
-//     }
-// }
+impl PartialOrd for ScanLineEdge {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
 
-// impl Ord for ScanLineEdge {
-//     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-//         if self.is_same_position_as(other) {
-//             std::cmp::Ordering::Equal
-//         } else if self.is_left_of(other) {
-//             std::cmp::Ordering::Less
-//         } else {
-//             std::cmp::Ordering::Greater
-//         }
-//     }
-// }
+impl Ord for ScanLineEdge {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        if self.is_same_position_as(other) {
+            std::cmp::Ordering::Equal
+        } else if self.is_left_of(other) {
+            std::cmp::Ordering::Less
+        } else {
+            std::cmp::Ordering::Greater
+        }
+    }
+}
 
 // Returns true iff p2 is considered to be below p1
 pub fn is_below(p1: &PointF64, p2: &PointF64) -> bool {
@@ -155,7 +155,7 @@ impl EdgeVec {
         // Look for target index
         let target_index = self.lower_bound(&edge);
 
-        if self.find_linear(&edge, target_index).is_some() {
+        if self.find(&edge).is_some() {
             return None;
         }
 
@@ -166,9 +166,7 @@ impl EdgeVec {
 
     /// Remove the given edge from the vec if it exists
     pub fn remove(&mut self, edge: &ScanLineEdge) {
-        // console_log_util(format!("remove is called. Trying to remove {:?}", edge));
-        let option = self.find_linear(&edge, self.lower_bound(&edge));
-        // console_log_util(format!("Lower_bound: {:?}", self.lower_bound(&edge)));
+        let option = self.find(&edge);
         if let Some(index) = option {
             self.vec.remove(index);
         }
@@ -189,24 +187,11 @@ impl EdgeVec {
 
     /// Returns Some(index) if edge (data exactly the same) is found at index in the vec, starting the search from from_index
     /// Returns None if the edge is not found
-    ///
-    /// It is unsure if a ScanLineEdge object will have the same p1,p2 but different index.
-    /// In this function, it is assumed to be possible just to play safe.
-    pub fn find_linear(&self, edge: &ScanLineEdge, from_index: usize) -> Option<usize> {
-        let mut index = from_index;
-        let len = self.vec.len();
-        while index < len {
-            let curr_edge = self.vec[index].borrow();
-            if curr_edge.index == edge.index && curr_edge.is_same_position_as(edge) {
-                break;
-            }
-            // If edge < curr_edge AND all edges to the right in the vec >= curr_edge,
-            // edge < curr_edge <= all edges to the right, i.e. it is no use to continue 
-            if edge.is_left_of(&curr_edge) {
-                return None;
-            }
-            index += 1;
+    pub fn find(&self, edge: &ScanLineEdge) -> Option<usize> {
+        if let Ok(index) = self.vec.binary_search_by(|ptr| ptr.borrow().cmp(edge)) {
+            Some(index)
+        } else {
+            None
         }
-        if index < len {Some(index)} else {None}
     }
 }
