@@ -2,14 +2,11 @@ use crate::polypartition::{EdgeVec, Polygon, PolygonInterface};
 use crate::polypartition::util::{add_diagonal, f64_approximately, is_below, is_convex, MonotoneVertex, ScanLineEdge};
 use crate::polypartition::enums::VertexType;
 
-use crate::util::console_log_util;
-
 use visioncortex::PointF64;
 
 #[allow(clippy::clippy::missing_safety_doc)]
 pub unsafe fn triangulate_mono_vec(polys: Vec<Polygon>) -> Result<Vec<Polygon>, String> {
     let polys = monotone_partition(polys)?;
-    return Ok(polys);
     let mut triangles = vec![];
     for poly in polys.iter() {
         triangles.extend(triangulate_mono(poly)?);
@@ -36,16 +33,13 @@ pub unsafe fn triangulate_mono(poly: &Polygon) -> Result<Vec<Polygon>, &str> {
     let mut bottom_index = 0;
     // Find the top-most and bottom-most points
     for i in 1..num_points {
-        if !is_below(&points[i], &points[bottom_index]) {
+        if is_below(&points[i], &points[bottom_index]) {
             bottom_index = i;
         }
-        if !is_below(&points[top_index], &points[i]) {
+        if is_below(&points[top_index], &points[i]) {
             top_index = i;
         }
     }
-
-    //console_log_util(format!("{:?} {:?}", points[top_index], points[bottom_index]));
-    console_log_util(format!("{:?} {:?}", top_index, bottom_index));
 
     // Check if the polygon is really monotone
     {
@@ -54,7 +48,7 @@ pub unsafe fn triangulate_mono(poly: &Polygon) -> Result<Vec<Polygon>, &str> {
         i = top_index;
         while i != bottom_index {
             let i2 = (i+1) % num_points;
-            if is_below(&points[i2], &points[i]) {
+            if !is_below(&points[i2], &points[i]) {
                 return Err("Input polygon is not monotone.");
             }
             i = i2;
@@ -62,10 +56,8 @@ pub unsafe fn triangulate_mono(poly: &Polygon) -> Result<Vec<Polygon>, &str> {
 
         i = bottom_index;
         while i != top_index {
-            console_log_util(i);
             let i2 = (i+1) % num_points;
-            console_log_util(format!("{:?} {:?}", &points[i], &points[i2]));
-            if is_below(&points[i], &points[i2]) {
+            if !is_below(&points[i], &points[i2]) {
                 return Err("Input polygon is not monotone.");
             }
             i = i2;
@@ -89,7 +81,7 @@ pub unsafe fn triangulate_mono(poly: &Polygon) -> Result<Vec<Polygon>, &str> {
             *p = left_index;
             left_index = (left_index+1) % num_points;
             vertex_types[*p] = 1;
-        } else if !is_below(&points[left_index], &points[right_index]) {
+        } else if is_below(&points[left_index], &points[right_index]) {
             *p = right_index;
             right_index = if right_index==0 {num_points-1} else {right_index-1};
             vertex_types[*p]  = -1;
@@ -315,11 +307,12 @@ pub unsafe fn monotone_partition(inpolys: Vec<Polygon>) -> Result<Vec<Polygon>, 
                     return Err("Pointer is NULL.");
                 }
 
+                #[allow(unused_assignments)]
                 if let VertexType::Merge = vertex_types[helpers[v.previous]] {
                     add_diagonal(&mut vertices, &mut new_num_vertices, v_index, helpers[v.previous],
                         &mut vertex_types, &mut edge_tree_pointers, &mut helpers);
                     v_index2 = new_num_vertices - 2;
-                    v2 = &vertices[v_index2];
+                    v2 = &vertices[v_index2]; // False alarm here?
                 }
 
                 if let Some(ptr) = &edge_tree_pointers[v.previous] {
@@ -389,12 +382,6 @@ pub unsafe fn monotone_partition(inpolys: Vec<Polygon>) -> Result<Vec<Polygon>, 
                 }
             },
         }
-
-        // let mut tree_string = format!("{:?}", vertex_types[v_index]) + " ";
-        // for i in 0..edge_tree.len() {
-        //     tree_string += &format!("{:?} ", edge_tree.get_edge_copy(i).unwrap().index);
-        // }
-        // console_log_util(tree_string);
     }
 
     let mut monotone_polys = vec![];
