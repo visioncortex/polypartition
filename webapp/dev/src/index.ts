@@ -19,15 +19,18 @@ async function main() {
         (document.getElementById('results_table') as HTMLTableElement).tBodies[0].appendChild(tr);
 
         console.groupCollapsed(testName);
+        let t0, t1;
         try {
+            t0 = performance.now();
             await fn(testName, BOTH);
+            t1 = performance.now();
             console.log("%c" + testName + " Success!", "color: lime;");
         } catch (e) {
             console.error(e);
             success = false;
         } finally {
             console.groupEnd();
-            results[testName] = success? "Success" : "Fail";
+            results[testName] = success? "Success in " + (t1 - t0).toFixed(2) + " ms" : "Fail";
         }
     }
 
