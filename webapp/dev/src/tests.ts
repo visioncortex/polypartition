@@ -5,11 +5,28 @@ export const IN = 'in';
 export const OUT = 'out';
 export const BOTH = 'both';
 
+export const files = {
+    "test_input.txt": [
+        "test_input.txt",
+        "test_remove_holes.txt",
+        "test_triangulate_EC.txt",
+        "test_triangulate_OPT.txt",
+        "test_triangulate_MONO_origin_correct.txt",
+    ],
+    "test_input_hexagon.txt": [
+        "test_input_hexagon.txt",
+        "test_remove_hexagon_holes.txt",
+        "test_triangulate_hexagon_EC.txt",
+        "test_triangulate_hexagon_OPT.txt",
+        "test_triangulate_hexagon_MONO_origin_correct.txt",
+    ],
+};
+
 export default [
-    async function RenderInput(canvasId: string, verbose?: string) {
+    async function RenderInput(inputFileName: string, dumpFileName: string, canvasId: string, verbose?: string) {
         let tester: Tester;
-try {
-            const inputText = await readFile(createPathToAsset("test_input.txt"));
+        try {
+            const inputText = await readFile(createPathToAsset(inputFileName));
             tester = Tester.from_input_text(inputText);
             tester.draw_polygons(canvasId, IN);
             if ([IN, OUT].includes(verbose)) {
@@ -19,8 +36,9 @@ try {
                 tester.print(OUT);
             }
             const dump = tester.dump_polygons(IN, false);
-            if (dump.localeCompare(inputText) !== 0) {
-                throw `Dump Incorrect!\n\nExpected:\n${inputText}Dump:\n${dump}`;
+            const outputText = await readFile(createPathToAsset(dumpFileName));
+            if (dump.localeCompare(outputText) !== 0) {
+                throw `Dump Incorrect!\n\nExpected:\n${outputText}\n\nDump:\n${dump}`;
             }
         } catch (e) {
             throw e;
@@ -30,10 +48,10 @@ try {
             }
         }
     },
-    async function RemoveHoles(canvasId: string, verbose?: string) {
+    async function RemoveHoles(inputFileName: string, dumpFileName: string, canvasId: string, verbose?: string) {
         let tester: Tester;
         try {
-            const inputText = await readFile(createPathToAsset("test_input.txt"));
+            const inputText = await readFile(createPathToAsset(inputFileName));
             tester = Tester.from_input_text(inputText);
             tester.test_remove_holes();
             tester.draw_polygons(canvasId, OUT);
@@ -44,9 +62,9 @@ try {
                 tester.print(OUT);
             }
             const dump = tester.dump_polygons(OUT, false);
-            const outputText = await readFile(createPathToAsset("test_remove_holes.txt"));
+            const outputText = await readFile(createPathToAsset(dumpFileName));
             if (dump.localeCompare(outputText) !== 0) {
-                throw `Dump Incorrect!\n\nExpected:\n${outputText}Dump:\n${dump}`;
+                throw `Dump Incorrect!\n\nExpected:\n${outputText}\n\nDump:\n${dump}`;
             }
         } catch (e) {
             throw e;
@@ -56,10 +74,10 @@ try {
             }
         }
     },
-    async function EarClipping(canvasId: string, verbose?: string) {
+    async function EarClipping(inputFileName: string, dumpFileName: string, canvasId: string, verbose?: string) {
         let tester: Tester;
         try {
-            const inputText = await readFile(createPathToAsset("test_input.txt"));
+            const inputText = await readFile(createPathToAsset(inputFileName));
             tester = Tester.from_input_text(inputText);
             tester.test_ear_clipping();
             tester.draw_polygons(canvasId, OUT);
@@ -70,9 +88,9 @@ try {
                 tester.print(OUT);
             }
             const dump = tester.dump_polygons(OUT, false);
-            const outputText = await readFile(createPathToAsset("test_triangulate_EC.txt"));
+            const outputText = await readFile(createPathToAsset(dumpFileName));
             if (dump.localeCompare(outputText) !== 0) {
-                throw `Dump Incorrect!\n\nExpected:\n${outputText}Dump:\n${dump}`;
+                throw `Dump Incorrect!\n\nExpected:\n${outputText}\n\nDump:\n${dump}`;
             }
         } catch (e) {
             throw e;
@@ -82,10 +100,10 @@ try {
             }
         }
     },
-    async function OptimalDP(canvasId: string, verbose?: string) {
+    async function OptimalDP(inputFileName: string, dumpFileName: string, canvasId: string, verbose?: string) {
         let tester: Tester;
         try {
-            const inputText = await readFile(createPathToAsset("test_input.txt"));
+            const inputText = await readFile(createPathToAsset(inputFileName));
             tester = Tester.from_input_text(inputText);
             tester.test_optimal_dp();
             tester.draw_polygons(canvasId, OUT);
@@ -96,9 +114,9 @@ try {
                 tester.print(OUT);
             }
             const dump = tester.dump_polygons(OUT, false);
-            const outputText = await readFile(createPathToAsset("test_triangulate_OPT.txt"));
+            const outputText = await readFile(createPathToAsset(dumpFileName));
             if (dump.localeCompare(outputText) !== 0) {
-                throw `Dump Incorrect!\n\nExpected:\n${outputText}Dump:\n${dump}`;
+                throw `Dump Incorrect!\n\nExpected:\n${outputText}\n\nDump:\n${dump}`;
             }
         } catch (e) {
             throw e;
@@ -108,10 +126,10 @@ try {
             }
         }
     },
-    async function Monotone(canvasId: string, verbose?: string) {
+    async function Monotone(inputFileName: string, dumpFileName: string, canvasId: string, verbose?: string) {
         let tester: Tester;
         try {
-            const inputText = await readFile(createPathToAsset("test_input.txt"));
+            const inputText = await readFile(createPathToAsset(inputFileName));
             tester = Tester.from_input_text(inputText);
             tester.test_monotone();
             tester.draw_polygons(canvasId, OUT);
@@ -122,9 +140,9 @@ try {
                 tester.print(OUT);
             }
             const dump = tester.dump_polygons(OUT, false);
-            const outputText = await readFile(createPathToAsset("test_triangulate_MONO_origin_correct.txt"));
+            const outputText = await readFile(createPathToAsset(dumpFileName));
             if (dump.localeCompare(outputText) !== 0) {
-                throw `Dump Incorrect!\n\nExpected:\n${outputText}Dump:\n${dump}`;
+                throw `Dump Incorrect!\n\nExpected:\n${outputText}\n\nDump:\n${dump}`;
             }
         } catch (e) {
             throw e;
