@@ -188,4 +188,38 @@ mod tests {
             Err(e) => {panic!(e.as_string().unwrap());}
         }
     }
+
+    #[test]
+    fn polypartition_hexagon_with_hole() {
+        let input_text = "2\n6\n0\n60 40\n200 40\n220 110\n200 180\n60 180\n40 110\n4\n1\n110 80\n90 140\n140 130\n170 80";
+        let mut tester = Tester::from_input_text(input_text);
+        match tester.test_remove_holes() {
+            Ok(_) => {
+                let correct_dump = "1\n12\n0\n60 40\n200 40\n220 110\n170 80\n110 80\n90 140\n140 130\n170 80\n220 110\n200 180\n60 180\n40 110";
+                assert!(tester.dump_polygons("out", false) == correct_dump);
+            },
+            Err(e) => {panic!(e.as_string().unwrap());}
+        }
+        match tester.test_ear_clipping() {
+            Ok(_) => {
+                let correct_dump = "10\n3\n0\n200 40\n220 110\n170 80\n3\n0\n60 40\n200 40\n170 80\n3\n0\n60 40\n170 80\n110 80\n3\n0\n40 110\n60 40\n110 80\n3\n0\n40 110\n110 80\n90 140\n3\n0\n60 180\n40 110\n90 140\n3\n0\n200 180\n60 180\n90 140\n3\n0\n200 180\n90 140\n140 130\n3\n0\n220 110\n200 180\n140 130\n3\n0\n220 110\n140 130\n170 80";
+                assert!(tester.dump_polygons("out", false) == correct_dump);
+            },
+            Err(e) => {panic!(e.as_string().unwrap());}
+        }
+        match tester.test_optimal_dp() {
+            Ok(_) => {
+                let correct_dump = "4\n3\n0\n60 40\n60 180\n40 110\n3\n0\n60 40\n200 40\n60 180\n3\n0\n200 40\n200 180\n60 180\n3\n0\n200 40\n220 110\n200 180";
+                assert!(tester.dump_polygons("out", false) == correct_dump);
+            },
+            Err(e) => {panic!(e.as_string().unwrap());}
+        }
+        match tester.test_monotone() {
+            Ok(_) => {
+                let correct_dump = "10\n3\n0\n110 80\n60 40\n200 40\n3\n0\n60 40\n110 80\n40 110\n3\n0\n40 110\n110 80\n90 140\n3\n0\n40 110\n90 140\n60 180\n3\n0\n170 80\n110 80\n200 40\n3\n0\n170 80\n200 40\n220 110\n3\n0\n170 80\n220 110\n140 130\n3\n0\n60 180\n90 140\n140 130\n3\n0\n60 180\n140 130\n220 110\n3\n0\n60 180\n220 110\n200 180";
+                assert!(tester.dump_polygons("out", false) == correct_dump);
+            },
+            Err(e) => {panic!(e.as_string().unwrap());}
+        }
+    }
 }

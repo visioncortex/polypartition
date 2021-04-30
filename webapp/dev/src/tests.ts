@@ -20,6 +20,13 @@ export const files = {
         "test_triangulate_hexagon_OPT.txt",
         "test_triangulate_hexagon_MONO_origin_correct.txt",
     ],
+    "test_input_hexagon_hole.txt": [
+        "test_input_hexagon_hole.txt",
+        "test_remove_hexagon_hole_holes.txt",
+        "test_triangulate_hexagon_hole_EC.txt",
+        "test_triangulate_hexagon_hole_OPT.txt",
+        "test_triangulate_hexagon_hole_MONO_origin_correct.txt",
+    ],
 };
 
 export default [
