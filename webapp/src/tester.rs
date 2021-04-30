@@ -104,9 +104,7 @@ impl Tester {
     }
 
     pub fn test_monotone(&mut self) -> Result<(), JsValue> {
-        unsafe {
-            self.output_polygons = Some(triangulate_mono_vec(self.input_polygons.clone())?);
-            Ok(())
-        }
+        self.output_polygons = Some(triangulate_mono_vec(self.input_polygons.clone())?);
+        Ok(())
     }
 }

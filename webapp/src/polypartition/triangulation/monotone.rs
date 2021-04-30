@@ -4,8 +4,7 @@ use crate::polypartition::enums::VertexType;
 
 use visioncortex::PointF64;
 
-#[allow(clippy::clippy::missing_safety_doc)]
-pub unsafe fn triangulate_mono_vec(polys: Vec<Polygon>) -> Result<Vec<Polygon>, String> {
+pub fn triangulate_mono_vec(polys: Vec<Polygon>) -> Result<Vec<Polygon>, String> {
     let polys = monotone_partition(polys)?;
     let mut triangles = vec![];
     for poly in polys.iter() {
@@ -14,8 +13,7 @@ pub unsafe fn triangulate_mono_vec(polys: Vec<Polygon>) -> Result<Vec<Polygon>, 
     Ok(triangles)
 }
 
-#[allow(clippy::clippy::missing_safety_doc)]
-pub unsafe fn triangulate_mono(poly: &Polygon) -> Result<Vec<Polygon>, &str> {
+pub fn triangulate_mono(poly: &Polygon) -> Result<Vec<Polygon>, &str> {
     if !poly.is_valid() {
         return Err("Input polygon is invalid.");
     }
@@ -163,8 +161,7 @@ pub unsafe fn triangulate_mono(poly: &Polygon) -> Result<Vec<Polygon>, &str> {
     Ok(triangles)
 }
 
-#[allow(clippy::clippy::missing_safety_doc)]
-pub unsafe fn monotone_partition(inpolys: Vec<Polygon>) -> Result<Vec<Polygon>, &'static str> {
+pub fn monotone_partition(inpolys: Vec<Polygon>) -> Result<Vec<Polygon>, &'static str> {
     if inpolys.iter().any(|poly| !poly.is_valid()) {
         return Err("Some input polygon is invalid!");
     }
