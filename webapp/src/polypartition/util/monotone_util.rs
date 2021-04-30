@@ -125,8 +125,6 @@ pub fn add_diagonal(vertices: &mut Vec<MonotoneVertex>, num_vertices: &mut usize
 /// 2) Insert
 /// 3) Remove given Rc 
 /// 4) Lowerbound search
-
-// Maybe Vec<Rc<RefCell<ScanLineEdge>>> ??
 #[derive(Default)]
 pub struct EdgeVec {
     pub vec: Vec<EdgeVecPtr>,
@@ -152,46 +150,34 @@ impl EdgeVec {
     }
 
     pub fn insert(&mut self, edge: ScanLineEdge) -> Option<EdgeVecPtr> {
-        // Look for target index
-        let target_index = self.lower_bound(&edge);
-
-        if self.find(&edge).is_some() {
-            return None;
+        if let Err(target_index) = self.find(&edge) {
+            let rc = Rc::new(RefCell::new(edge));
+            self.vec.insert(target_index, rc);
+            Some(self.vec[target_index].clone())
+        } else {
+            None
         }
 
-        let rc = Rc::new(RefCell::new(edge));
-        self.vec.insert(target_index, rc);
-        Some(self.vec[target_index].clone())
     }
 
     /// Remove the given edge from the vec if it exists
     pub fn remove(&mut self, edge: &ScanLineEdge) {
-        let option = self.find(&edge);
-        if let Some(index) = option {
+        let result = self.find(&edge);
+        if let Ok(index) = result {
             self.vec.remove(index);
         }
     }
 
     /// Returns the index of the first edge that is not less than the input edge
     pub fn lower_bound(&self, edge: &ScanLineEdge) -> usize {
-        let mut target_index = 0;
-        let len = self.vec.len();
-        while target_index < len {
-            if !self.vec[target_index].borrow().is_left_of(edge) {
-                break;
-            }
-            target_index += 1;
+        match self.find(edge) {
+            Ok(index) => index,
+            Err(index) => index,
         }
-        target_index
     }
 
-    /// Returns Some(index) if edge (data exactly the same) is found at index in the vec, starting the search from from_index
-    /// Returns None if the edge is not found
-    pub fn find(&self, edge: &ScanLineEdge) -> Option<usize> {
-        if let Ok(index) = self.vec.binary_search_by(|ptr| ptr.borrow().cmp(edge)) {
-            Some(index)
-        } else {
-            None
-        }
+    /// Binary search for the edge
+    pub fn find(&self, edge: &ScanLineEdge) -> Result<usize, usize> {
+        self.vec.binary_search_by(|ptr| ptr.borrow().cmp(edge))
     }
 }
