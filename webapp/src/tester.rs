@@ -99,7 +99,15 @@ impl Tester {
     }
 
     pub fn test_optimal_dp(&mut self) -> Result<(), JsValue> {
-        self.output_polygons = Some(triangulate_opt_vec(self.input_polygons.clone())?);
+        let non_hole_polygons: Vec<Polygon> = self.input_polygons.iter()
+            .filter_map(|polygon|
+                if polygon.is_hole() {
+                    None
+                } else {
+                    Some(polygon.clone())
+                }
+            ).collect();
+        self.output_polygons = Some(triangulate_opt_vec(non_hole_polygons)?);
         Ok(())
     }
 

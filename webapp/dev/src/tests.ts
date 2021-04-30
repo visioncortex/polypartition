@@ -85,7 +85,7 @@ try {
     async function OptimalDP(canvasId: string, verbose?: string) {
         let tester: Tester;
         try {
-            const inputText = await readFile(createPathToAsset("test_input_no_hole.txt"));
+            const inputText = await readFile(createPathToAsset("test_input.txt"));
             tester = Tester.from_input_text(inputText);
             tester.test_optimal_dp();
             tester.draw_polygons(canvasId, OUT);
