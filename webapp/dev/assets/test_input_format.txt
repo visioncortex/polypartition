@@ -7,7 +7,7 @@
 137 479  # Position of a vertex, Y is down, must be clockwise order.
 4        # Number of vertices in the second polygon.
 1        # This polygon IS a hole.
-97 459   # Position of a vertex, Y is down, must be clockwise order.
-117 459  # Position of a vertex, Y is down, must be clockwise order.
-117 439  # Position of a vertex, Y is down, must be clockwise order.
-97 439   # Position of a vertex, Y is down, must be clockwise order.
+97 459   # Position of a vertex, Y is down, must be anti-clockwise order.
+117 459  # Position of a vertex, Y is down, must be anti-clockwise order.
+117 439  # Position of a vertex, Y is down, must be anti-clockwise order.
+97 439   # Position of a vertex, Y is down, must be anti-clockwise order.
