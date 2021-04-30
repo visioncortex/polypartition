@@ -122,7 +122,7 @@ try {
                 tester.print(OUT);
             }
             const dump = tester.dump_polygons(OUT, false);
-            const outputText = await readFile(createPathToAsset("test_triangulate_OPT.txt"));
+            const outputText = await readFile(createPathToAsset("test_triangulate_MONO.txt"));
             if (dump.localeCompare(outputText) !== 0) {
                 throw `Dump Incorrect!\n\nExpected:\n${outputText}Dump:\n${dump}`;
             }

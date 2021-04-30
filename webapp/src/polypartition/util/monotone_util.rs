@@ -1,7 +1,8 @@
-use intrusive_collections::{KeyAdapter, RBTree, RBTreeLink, intrusive_adapter};
+use std::{cell::RefCell, rc::Rc};
+
 use visioncortex::PointF64;
 
-use crate::polypartition::VertexType;
+use crate::{polypartition::VertexType, util::console_log_util};
 
 use super::{f64_approximately, is_convex, point_f64_approximately};
 
@@ -12,16 +13,19 @@ pub struct MonotoneVertex {
     pub next: usize,
 }
 
-#[derive(Clone, Default)]
+#[derive(Clone, Debug, Default)]
 pub struct ScanLineEdge {
     pub index: usize,
     pub p1: PointF64,
     pub p2: PointF64,
-    pub link: RBTreeLink,
 }
 
 impl ScanLineEdge {
     pub fn is_left_of(&self, other: &ScanLineEdge) -> bool {
+        if self.is_same_position_as(other) {
+            return false;
+        }
+
         if f64_approximately(other.p1.y, other.p2.y) {
             if f64_approximately(self.p1.y, self.p2.y) {
                 return self.p1.y < other.p1.y;
@@ -41,52 +45,33 @@ impl ScanLineEdge {
     }
 }
 
-impl PartialEq for ScanLineEdge {
-    fn eq(&self, other: &Self) -> bool {
-        self.is_same_position_as(other)
-    }
-}
+// impl PartialEq for ScanLineEdge {
+//     fn eq(&self, other: &Self) -> bool {
+//         self.is_same_position_as(other)
+//     }
+// }
 
-impl Eq for ScanLineEdge {}
+// impl Eq for ScanLineEdge {}
 
-impl PartialOrd for ScanLineEdge {
-    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        Some(self.cmp(other))
-    }
-}
+// impl PartialOrd for ScanLineEdge {
+//     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+//         Some(self.cmp(other))
+//     }
+// }
 
-impl Ord for ScanLineEdge {
-    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        if self.is_same_position_as(other) {
-            std::cmp::Ordering::Equal
-        } else if self.is_left_of(other) {
-            std::cmp::Ordering::Less
-        } else {
-            std::cmp::Ordering::Greater
-        }
-    }
-}
+// impl Ord for ScanLineEdge {
+//     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+//         if self.is_same_position_as(other) {
+//             std::cmp::Ordering::Equal
+//         } else if self.is_left_of(other) {
+//             std::cmp::Ordering::Less
+//         } else {
+//             std::cmp::Ordering::Greater
+//         }
+//     }
+// }
 
-intrusive_adapter!(
-    pub ScanLineEdgeAdaptor = Box<ScanLineEdge>: ScanLineEdge { link: RBTreeLink }
-);
-
-impl<'a> KeyAdapter<'a> for ScanLineEdgeAdaptor {
-    type Key = ScanLineEdge;
-
-    fn get_key(&self, value: &'a Self::Key) -> Self::Key {
-        value.clone()
-    }
-}
-
-pub type EdgeTree = RBTree<ScanLineEdgeAdaptor>;
-#[derive(Clone, Copy)]
-pub enum EdgeTreePtr {
-    Node(*mut ScanLineEdge),
-    Null
-}
-
-// Returns true iff p1 is considered to be below p2
+// Returns true iff p2 is considered to be below p1
 pub fn is_below(p1: &PointF64, p2: &PointF64) -> bool {
     p1.y < p2.y || (f64_approximately(p1.y, p2.y) && p1.x < p2.x)
 }
@@ -94,8 +79,8 @@ pub fn is_below(p1: &PointF64, p2: &PointF64) -> bool {
 #[allow(clippy::too_many_arguments)]
 pub fn add_diagonal(vertices: &mut Vec<MonotoneVertex>, num_vertices: &mut usize,
     index1: usize, index2: usize, vertex_types: &mut Vec<VertexType>,
-    edge_tree_pointers: &mut Vec<EdgeTreePtr>, helpers: &mut Vec<usize>) {
-    
+    edge_vec_pointers: &mut Vec<Option<EdgeVecPtr>>, helpers: &mut Vec<usize>) {
+
     let new_index1 = *num_vertices;
     *num_vertices += 1;
     let new_index2 = *num_vertices;
@@ -120,16 +105,108 @@ pub fn add_diagonal(vertices: &mut Vec<MonotoneVertex>, num_vertices: &mut usize
 
     // Update all relevant structures
     vertex_types[new_index1] = vertex_types[index1];
-    edge_tree_pointers[new_index1] = edge_tree_pointers[index1];
+    edge_vec_pointers[new_index1] = edge_vec_pointers[index1].clone();
     helpers[new_index1] = helpers[index1];
-    if let EdgeTreePtr::Node(edge) = edge_tree_pointers[new_index1] {
-        unsafe { (*edge).index = new_index1; }
+    if let Some(edge) = &edge_vec_pointers[new_index1] {
+        edge.borrow_mut().index = new_index1;
     }
 
     vertex_types[new_index2] = vertex_types[index2];
-    edge_tree_pointers[new_index2] = edge_tree_pointers[index2];
+    edge_vec_pointers[new_index2] = edge_vec_pointers[index2].clone();
     helpers[new_index2] = helpers[index2];
-    if let EdgeTreePtr::Node(edge) = edge_tree_pointers[new_index2] {
-        unsafe { (*edge).index = new_index2; }
+    if let Some(edge) = &edge_vec_pointers[new_index2] {
+        edge.borrow_mut().index = new_index2;
+    }
+}
+
+/// A data structure to store ScanLineEdge's
+/// Requirement:
+/// 1) Change any element given Rc in constant time (supported by Rc<RefCell<...>> in nature)
+/// 2) Insert
+/// 3) Remove given Rc 
+/// 4) Lowerbound search
+
+// Maybe Vec<Rc<RefCell<ScanLineEdge>>> ??
+#[derive(Default)]
+pub struct EdgeVec {
+    pub vec: Vec<EdgeVecPtr>,
+}
+
+pub type EdgeVecPtr = Rc<RefCell<ScanLineEdge>>;
+
+impl EdgeVec {
+    pub fn len(&self) -> usize {
+        self.vec.len()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+
+    pub fn get_edge_copy(&self, index: usize) -> Option<ScanLineEdge> {
+        if index < self.vec.len() {
+            Some(self.vec[index].borrow().clone())
+        } else {
+            None
+        }
+    }
+
+    pub fn insert(&mut self, edge: ScanLineEdge) -> Option<EdgeVecPtr> {
+        // Look for target index
+        let target_index = self.lower_bound(&edge);
+
+        if self.find_linear(&edge, target_index).is_some() {
+            return None;
+        }
+
+        let rc = Rc::new(RefCell::new(edge));
+        self.vec.insert(target_index, rc);
+        Some(self.vec[target_index].clone())
+    }
+
+    /// Remove the given edge from the vec if it exists
+    pub fn remove(&mut self, edge: &ScanLineEdge) {
+        // console_log_util(format!("remove is called. Trying to remove {:?}", edge));
+        let option = self.find_linear(&edge, self.lower_bound(&edge));
+        // console_log_util(format!("Lower_bound: {:?}", self.lower_bound(&edge)));
+        if let Some(index) = option {
+            self.vec.remove(index);
+        }
+    }
+
+    /// Returns the index of the first edge that is not less than the input edge
+    pub fn lower_bound(&self, edge: &ScanLineEdge) -> usize {
+        let mut target_index = 0;
+        let len = self.vec.len();
+        while target_index < len {
+            if !self.vec[target_index].borrow().is_left_of(edge) {
+                break;
+            }
+            target_index += 1;
+        }
+        target_index
+    }
+
+    /// Returns Some(index) if edge (data exactly the same) is found at index in the vec, starting the search from from_index
+    /// Returns None if the edge is not found
+    ///
+    /// It is unsure if a ScanLineEdge object will have the same p1,p2 but different index.
+    /// In this function, it is assumed to be possible just to play safe.
+    pub fn find_linear(&self, edge: &ScanLineEdge, from_index: usize) -> Option<usize> {
+        let mut index = from_index;
+        let len = self.vec.len();
+        while index < len {
+            let curr_edge = self.vec[index].borrow();
+            if curr_edge.index == edge.index && curr_edge.is_same_position_as(edge) {
+                break;
+            }
+            // If edge < curr_edge AND all edges to the right in the vec >= curr_edge,
+            // edge < curr_edge <= all edges to the right, i.e. it is no use to continue 
+            if edge.is_left_of(&curr_edge) {
+                return None;
+            }
+            index += 1;
+        }
+        if index < len {Some(index)} else {None}
     }
 }

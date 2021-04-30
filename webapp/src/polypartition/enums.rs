@@ -5,8 +5,9 @@ pub enum Orientation {
     CounterClockwise = 1,
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub enum VertexType {
+    Null = -1,
     Regular = 0,
     Start = 1,
     End = 2,
